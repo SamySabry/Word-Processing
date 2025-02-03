@@ -1,0 +1,101 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<h2>Word Processor</h2>
+
+<!-- Input form to add words dynamically -->
+<div>
+    <label>Word:</label>
+    <input type="text" id="wordInput">
+    <label>X:</label>
+    <input type="number" id="xInput">
+    <label>Y:</label>
+    <input type="number" id="yInput">
+    <label>Width:</label>
+    <input type="number" id="widthInput">
+    <label>Height:</label>
+    <input type="number" id="heightInput">
+    <button id="addWordBtn">Add Word</button>
+</div>
+
+<!-- Display added words -->
+<h3>Words List</h3>
+<ul id="wordsList"></ul>
+
+<!-- Button to process words -->
+<button id="processWordsBtn">Process Words</button>
+
+<!-- Display result -->
+<div id="result"></div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        let words = [];
+
+        $("#addWordBtn").click(function () {
+            debugger
+            let wordText = $("#wordInput").val().trim();
+            let x = parseFloat($("#xInput").val());
+            let y = parseInt($("#yInput").val());
+            let width = parseFloat($("#widthInput").val());
+            let height = parseFloat($("#heightInput").val());
+
+            if (!wordText || isNaN(x) || isNaN(y) || isNaN(width) || isNaN(height)) {
+                alert("Please fill all fields correctly.");
+                return;
+            }
+
+            let wordObject = {
+                word: wordText,
+                bbox: {
+                    X: x,
+                    Y: y,
+                    Width: width,
+                    Height: height
+                }
+            };
+
+            words.push(wordObject);
+            updateWordList();
+        });
+
+        function updateWordList() {
+            $("#wordsList").empty();
+            $.each(words, function (index, word) {
+                $("#wordsList").append(`<li>${word.word} (X:${word.bbox.X}, Y:${word.bbox.Y})
+                                <button class="removeWordBtn" data-index="${index}">Remove</button></li>`);
+            });
+        }
+
+        $(document).on("click", ".removeWordBtn", function () {
+            let index = $(this).data("index");
+            words.splice(index, 1);
+            updateWordList();
+        });
+
+        $("#processWordsBtn").click(function () {
+            if (words.length === 0) {
+                alert("Please add words before processing.");
+                return;
+            }
+
+            $.ajax({
+                url: "/Home/ProcessWords",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(words),
+                success: function (data) {
+                    $("#result").html("<h3>Processed Lines:</h3><pre>" + JSON.stringify(data, null, 2) + "</pre>");
+                },
+                error: function (error) {
+                    console.error("Error:", error);
+                }
+            });
+        });
+    });
+</script>
+
