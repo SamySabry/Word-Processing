@@ -1,0 +1,6 @@
+@Word_Processing_HostAddress = http://localhost:5173
+
+GET {{Word_Processing_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
